@@ -1,0 +1,16 @@
+{
+  "scripts": [
+    {
+      "name": "OldCubeFly",
+      "description": "Float fly for CubeCraft (outdated)",
+      "version": "6.9",
+      "rawLink": "https://raw.githubusercontent.com/SpoilerRules/btmc/main/the_cloud/scripts/OldCubeFly.js"
+    },
+    {
+      "name": "JumpCriticals",
+      "description": "Perform critical hits while jumping (also includes packet modes such as AAC, NCP)",
+      "version": "2.1",
+      "rawLink": "https://raw.githubusercontent.com/SpoilerRules/btmc/main/the_cloud/scripts/JumpCriticals.js"
+    }
+  ]
+}
