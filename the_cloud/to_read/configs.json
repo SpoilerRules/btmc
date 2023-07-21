@@ -4,6 +4,7 @@
       "name": "SRinaorc",
       "creator": "Spoili",
       "description": "Configuration made for Bedwars and Practice",
+      "toggleable": "Aura, Speed, Scaffold",
       "version": "1.0",
       "outdated": false,
       "rawLink": "https://github.com/SpoilerRules/btmc/blob/main/the_cloud/configurations/SRinaorc.json"
