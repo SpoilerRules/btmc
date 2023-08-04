@@ -8,9 +8,9 @@
  * All rights reserved. Unauthorized use, copying, or reproduction of any part of this Software is strictly prohibited.
  */
 //@ author Spoili
-//@ version 1.0
+//@ version 1.01
 //@ description Displays information regarding to your in-game session.
-var roguethebat = rise.registerModule(rise.getModule("Interface").getSetting("Remove Spaces") ? "SessionInfo" : "Session Info", "Provides you with information regarding to the session");
+var roguethebat = rise.registerModule(rise.getModule("Interface").getSetting("Remove Spaces") ? "SessionInfo" : "Session Info", "Provides you with information about the session");
 script.handle("onUnload", function () {roguethebat.unregister();});
 
 roguethebat.registerSetting("boolean", "Kill/Death Ratio", false);
@@ -22,7 +22,6 @@ roguethebat.registerSetting("number", "Additional Wideness", 0, 0, 500, 1);
 
 var startTime = 0;
 var elapsedTicks = 0;
-var tickps = 20;
 var deaths = 0;
 var kills = 0;
 var isDead = false;
@@ -52,12 +51,11 @@ roguethebat.handle("onRender2D", function () {
   var rectX = roguethebat.getSetting("X");
   var rectY = roguethebat.getSetting("Y");
   var sectionYOffset = lineHeight * (roguethebat.getSetting("Kill/Death Ratio") ? (roguethebat.getSetting("Username") ? -0.35 : 0.55) : (roguethebat.getSetting("Username") ? 0.25 : 0.55));
-  var themeColor = render.getThemeColor();
 
   render.bloom(function () {render.roundedRectangle(rectX - rectWidth / 2, rectY - rectHeight / 2, rectWidth, rectHeight, 7, render.getThemeColor());});
   render.roundedRectangle(rectX - rectWidth / 2, rectY - rectHeight / 2, rectWidth, rectHeight, 7, [0, 0, 0, 100]);
   fontolotl.drawWithShadow("Session info", rectX - fontolotl.width("Session info") / 2, rectY - rectHeight / 2 + rectPadding, [255, 255, 255, 255]);
-  if (roguethebat.getSetting("Bar")) render.rectangle(rectX - rectWidth / 2, rectY - lineHeight * (roguethebat.getSetting("Kill/Death Ratio") ? (roguethebat.getSetting("Username") ? 2.35 : 1.55) : (roguethebat.getSetting("Username") ? 1.55 : 0.9)), rectWidth, 2, themeColor);
+  if (roguethebat.getSetting("Bar")) render.rectangle(rectX - rectWidth / 2, rectY - lineHeight * (roguethebat.getSetting("Kill/Death Ratio") ? (roguethebat.getSetting("Username") ? 2.35 : 1.55) : (roguethebat.getSetting("Username") ? 1.55 : 0.9)), rectWidth, 2, render.getThemeColor());
 
   fontolotl.drawWithShadow("Elapsed time: " + getTime(), rectX - rectWidth / 2 + rectPadding, rectY - lineHeight * 2 + rectPadding + sectionYOffset * (roguethebat.getSetting("Kill/Death Ratio") ? 1 : 2.05), [255, 255, 255, 255]);
   roguethebat.getSetting("Kill/Death Ratio") ? (roguethebat.getSetting("Username") ? (fontolotl.drawWithShadow(username, rectX - rectWidth / 2 + rectPadding, rectY - lineHeight * 1 + rectPadding + sectionYOffset + lineSpacing, [255, 255, 255, 255]), fontolotl.drawWithShadow("KD Ratio: " + kdRatio, rectX - rectWidth / 2 + rectPadding, rectY - lineHeight * 1 + rectPadding + sectionYOffset + lineSpacing * 4, [255, 255, 255, 255])) : fontolotl.drawWithShadow("KD Ratio: " + kdRatio, rectX - rectWidth / 2 + rectPadding, rectY - lineHeight * 1 + rectPadding + sectionYOffset + lineSpacing, [255, 255, 255, 255])) : (roguethebat.getSetting("Username") ? fontolotl.drawWithShadow(username, rectX - rectWidth / 2 + rectPadding, rectY - lineHeight * 1 + rectPadding + sectionYOffset + lineSpacing * 1, [255, 255, 255, 255]) : null);
