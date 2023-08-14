@@ -8,7 +8,7 @@
  * All rights reserved. Unauthorized use, copying, or reproduction of any part of this Software is strictly prohibited.
  */
 //@ author Spoili
-//@ version 2.5
+//@ version 2.6
 //@ description YEP
 var critz = rise.registerModule(rise.getModule("Interface").getSetting("Remove Spaces") ? "GravyCriticals" : "Gravy Criticals", "Enables you to critically hit your opponent when it's time to do some critical damage");
 script.handle("onUnload", function () {critz.unregister();})
@@ -31,8 +31,9 @@ critz.registerSetting("boolean", "Sword & Axe Only", true);
 critz.registerSetting("boolean", "Aura Only", true);
 critz.registerSetting("boolean", "No Move Check", false);
 critz.registerSetting("boolean", "Force No Move", false);
-/*critz.registerSetting("boolean", "Sprint Check", false); awaiting isSprinting()
-critz.registerSetting("boolean", "Force No Sprint", false);*/
+critz.registerSetting("boolean", "Sprint Check", false);
+critz.registerSetting("boolean", "Force No Sprint", false);
+critz.registerSetting("boolean", "BlocksMC Warning", true)
 
 var axeIds = [279, 286, 258, 275, 271];
 
@@ -69,16 +70,19 @@ critz.handle("onAttack", function (ag) {
   var posZ = player.getPosition().getZ();
 
   if (input.isKeyBindJumpDown() || Fly.isEnabled() || Criticals.isEnabled() || Speed.isEnabled() || Jumpy.isEnabled() || !player.isOnGround()) return;
+  if (player.isInWater() || player.isInLava() || player.isInWeb() || player.isOnLadder()) return;
   if (critz.getSetting("Aura Only") ? !(Aura.isEnabled() && world.getTargetEntity(Aura.getSetting("Range"))) : !target) return;
   if (critz.getSetting("Sword & Axe Only") && !(player.isHoldingSword() || isHoldingAxe())) return;
   if (critz.getSetting("No Move Check") && player.isMoving() && !critz.getSetting("Force No Move")) return;
+  if (critz.getSetting("Sprint Check") && player.isSprinting() && !critz.getSetting("Force No Sprint")) return;
 
-  if (critz.getSetting("Mode") == "Jump") {
-    player.jump(), jumped = true;
-  } else {
+  if (critz.getSetting("Mode") === "Jump") player.jump(), jumped = true;
+  else {
     if (!hasTimePassed(critz.getSetting("Delay"))) return;
 
     if (critz.getSetting("Force No Move") && player.isMoving()) player.stop();
+    if (critz.getSetting("Force No Sprint") && player.isSprinting()) player.setSprinting(false);
+
     switch (critz.getSetting("Mode")) {
       case "Packet Vanilla":
         packet.sendPosition(posX, posY + 0.041999998688698, posZ, false);
@@ -110,10 +114,11 @@ critz.handle("onAttack", function (ag) {
 });
 
 critz.handle("onPreMotion", function () {
-  if (critz.getSetting("Mode") == "Jump") {
+  if (critz.getSetting("Mode") === "Jump") {
     if (player.isOnGround()) jumped = false;
     if (jumped && critz.getSetting("Smooth Camera")) render.smoothCamera();
   } else jumped = false;
+  if (critz.getSetting("BlocksMC Warning") && critz.getSetting("Mode") === "BlocksMC" && hasTimePassed(5000) && critz.getSetting("Delay") < 300) rise.displayChat("§dPlease adjust your Gravy Criticals 'delay' setting to 300-600 if you're on BlocksMC. You can turn off this warning in the Gravy Criticals settings."), timeReset();
 });
 
 critz.handle("onStrafe", function () {
