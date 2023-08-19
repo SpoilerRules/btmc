@@ -8,37 +8,37 @@
  * All rights reserved. Unauthorized use, copying, or reproduction of any part of this Software is strictly prohibited.
  */
 //@ author Spoili
-//@ version 2.61
+//@ version 2.62
 //@ description Enables you to critically hit your opponent when it's time to do some critical damage
 var critz = rise.registerModule(rise.getModule("Interface").getSetting("Remove Spaces") ? "GravyCriticals" : "Gravy Criticals", "Execute the \".script reload\" command if the settings do not appear.");
 script.handle("onUnload", function () {critz.unregister();});
+script.handle("onLoad", function () {
+    critz.registerSetting("mode", "Mode", "Jump", "Jump", "Hop", "Low Packet", "BlocksMC", "NCP", "Old Hypixel");
+    critz.registerSetting("number", "Delay", 600, 0, 3000, 0.1);
+    critz.registerSetting("number", "Hurt Time", 10, 1, 10, 1);
+    critz.registerSetting("number", "Hop Height", 0.3, 0.08, 0.8, 0.10);
+    critz.registerSetting("boolean", "Smooth Camera", false);
+    critz.registerSetting("number", "Landing Motion", 0, 0.01, 8, 0.05);
+    critz.registerSetting("number", "Landing Motion Y", 0.06, 0.01, 6, 0.05);
+    critz.registerSetting("boolean", "Sword & Axe Only", true);
+    critz.registerSetting("boolean", "Aura Only", true);
+    critz.registerSetting("boolean", "No Move Check", false);
+    critz.registerSetting("boolean", "Force No Move", false);
+    critz.registerSetting("boolean", "Sprint Check", false);
+    critz.registerSetting("boolean", "Force No Sprint", false);
+    critz.registerSetting("boolean", "BlocksMC Warning", true);
+});
 
-var currentTarget = null;
-var jumped = false;
-var jumpOrHopMode = null;
-var ticks = 0;
-
-var spaceCheck = rise.getModule("Interface").getSetting("Remove Spaces");
-
-var Aura = spaceCheck ? rise.getModule("Kill Aura") : rise.getModule("KillAura")
+var Aura = rise.getModule("Interface").getSetting("Remove Spaces") ? rise.getModule("Kill Aura") : rise.getModule("KillAura");
+var Jumpy = rise.getModule("Interface").getSetting("Remove Spaces") ? rise.getModule("Long Jump") : rise.getModule("LongJump");
 var Criticals = rise.getModule("Criticals");
 var Speed = rise.getModule("Speed");
 var Fly = rise.getModule("Flight");
-var Jumpy = spaceCheck ? rise.getModule("Long Jump") : rise.getModule("LongJump");
 
-critz.registerSetting("mode", "Mode", "Jump", "Jump", "Hop", "Packet Vanilla", "BlocksMC", "Test", "Old Hypixel");
-critz.registerSetting("number", "Delay", 600, 0, 3000, 0.1);
-critz.registerSetting("number", "Hop Height", 0.34, 0.10, 0.80, 0.01);
-critz.registerSetting("boolean", "Smooth Camera", false);
-critz.registerSetting("number", "Landing Motion", 0, 0.01, 8, 0.05);
-critz.registerSetting("number", "Landing Motion Y", 0.06, 0.01, 6, 0.05);
-critz.registerSetting("boolean", "Sword & Axe Only", true);
-critz.registerSetting("boolean", "Aura Only", true);
-critz.registerSetting("boolean", "No Move Check", false);
-critz.registerSetting("boolean", "Force No Move", false);
-critz.registerSetting("boolean", "Sprint Check", false);
-critz.registerSetting("boolean", "Force No Sprint", false);
-critz.registerSetting("boolean", "BlocksMC Warning", true)
+var currentTarget = null;
+var jumpOrHopMode = null;
+
+var jumped = false;
 
 var axeIds = [279, 286, 258, 275, 271];
 
@@ -54,12 +54,12 @@ function isHoldingAxe() {
 
 //function secToNano(seed) {return seed ^ (rise.getSystemMillis() * 1000000);}
 
-var time = -1;
-
 // Random Util of LiquidBounce
 function nextDouble(startInclusive, endInclusive) {return startInclusive + (endInclusive - startInclusive) * Math.random();}
 
 // MS Timer
+var time = -1;
+
 function hasTimePassed(ms) {return rise.getSystemMillis() >= time + ms;}
 
 function hasTimeLeft(ms) {return ms + time - rise.getSystemMillis();}
@@ -84,27 +84,25 @@ critz.handle("onAttack", function (ag) {
    if (jumpOrHopMode) {
      critz.getSetting("Mode") === "Jump" ? player.jump() : player.setMotionY(critz.getSetting("Hop Height"));
      jumped = true;
-   } else {                                                        /*  !!!  extra protection !!! */
-    if (!hasTimePassed(critz.getSetting("Delay")) || !player.isCollidedVertically() || player.isCollidedHorizontally()) return;
+   } else {                                                                                                               /*  !!!  extra protection !!! */
+    if (!hasTimePassed(critz.getSetting("Delay")) || target.getHurtTime() > critz.getSetting("Hurt Time") || !player.isCollidedVertically() || player.isCollidedHorizontally()) return;
 
     if (critz.getSetting("Force No Move") && player.isMoving()) player.stop();
     if (critz.getSetting("Force No Sprint") && player.isSprinting()) player.setSprinting(false);
 
     switch (critz.getSetting("Mode")) {
-      case "Packet Vanilla":
-        packet.sendPosition(posX, posY + 0.041999998688698, posZ, false);
+      case "Low Packet": // bypasses Loyisa's NCP
+        packet.sendPosition(posX, posY + 1e-14, posZ, false);
         packet.sendPosition(posX, posY, posZ, false);
         break;
-      case "BlocksMC":
+      case "BlocksMC": // bypasses BlocksMC bedwars & skywars and Loyisa's NCP
         packet.sendPosition(posX, posY + 3e-14, posZ, true);
         packet.sendPosition(posX, posY + 8e-15, posZ, false);
         break;
-      case "Test":
-        ticks++
-        if (ticks < 12) packet.sendPosition(posX, posY, posZ, false);
-        if (ticks > 14) packet.sendPosition(posX, posY + 0.06000831, posZ, false), packet.sendPosition(posX, posY, posZ, false), ticks = 0;
-        break;
-      case "Old Hypixel":
+      case "NCP":
+        // TODO: make NCP crits
+      break;
+      case "Old Hypixel": // used to bypass Hypixel back in 2018-2020
         packet.sendPosition(posX, posY, posZ, false);
         packet.sendPosition(posX, posY + nextDouble(0.01, 0.06), posZ, false);
         packet.sendPosition(posX, posY, posZ, false);
